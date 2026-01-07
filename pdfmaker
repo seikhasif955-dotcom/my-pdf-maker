@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro PDF Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        #pdf-content::-webkit-scrollbar { width: 8px; }
+        #pdf-content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark #pdf-content::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 min-h-screen transition-colors duration-300">
+
+    <div class="max-w-4xl mx-auto py-10 px-4">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Pro PDF Studio</h1>
+            <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm font-medium">
+                🌓 Toggle Theme
+            </button>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 shadow-2xl rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+            <div class="bg-slate-50 dark:bg-slate-700 p-3 border-b border-slate-200 dark:border-slate-600 flex flex-wrap gap-2">
+                <button onclick="execCmd('bold')" class="px-3 py-1 bg-white dark:bg-slate-600 rounded border shadow-sm font-bold">B</button>
+                <button onclick="execCmd('italic')" class="px-3 py-1 bg-white dark:bg-slate-600 rounded border shadow-sm italic">I</button>
+                <button onclick="execCmd('underline')" class="px-3 py-1 bg-white dark:bg-slate-600 rounded border shadow-sm underline">U</button>
+                <button onclick="execCmd('justifyLeft')" class="px-3 py-1 bg-white dark:bg-slate-600 rounded border shadow-sm">Left</button>
+                <button onclick="execCmd('justifyCenter')" class="px-3 py-1 bg-white dark:bg-slate-600 rounded border shadow-sm">Center</button>
+                <div class="h-6 w-[1px] bg-slate-300 mx-1"></div>
+                <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="insertImage(event)">
+                <button onclick="document.getElementById('imageInput').click()" class="px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200 rounded border border-indigo-200 text-sm">
+                    + Add Image
+                </button>
+            </div>
+
+            <div class="p-6 pb-0">
+                <input type="text" id="filename" placeholder="Document Name..." 
+                       class="w-full text-xl font-semibold bg-transparent border-b border-slate-200 dark:border-slate-700 pb-2 focus:outline-none focus:border-indigo-500 dark:text-white">
+            </div>
+
+            <div class="p-6">
+                <div id="pdf-content" contenteditable="true" 
+                     class="min-h-[500px] p-8 bg-white text-black rounded shadow-inner border border-slate-100 outline-none overflow-y-auto">
+                    <h2>Your Document Starts Here...</h2>
+                    <p>Click here to start typing. You can use the buttons above to style your text or add images.</p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 dark:bg-slate-700 flex justify-end">
+                <button onclick="downloadPDF()" 
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-8 rounded-lg shadow-lg transform transition active:scale-95">
+                    Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Text Formatting
+        function execCmd(command) {
+            document.execCommand(command, false, null);
+        }
+
+        // Image Handling
+        function insertImage(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = `<img src="${e.target.result}" style="max-width: 100%; margin: 10px 0; border-radius: 8px;">`;
+                document.execCommand('insertHTML', false, img);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Theme Toggle
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // PDF Generation
+        function downloadPDF() {
+            const element = document.getElementById('pdf-content');
+            const name = document.getElementById('filename').value || 'document';
+            
+            const opt = {
+                margin: [0.5, 0.5],
+                filename: `${name}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
+
